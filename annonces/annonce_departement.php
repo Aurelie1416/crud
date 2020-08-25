@@ -38,11 +38,11 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
 
     // on vérifie si l'article n'existe pas
     if(!$liste_annonce){
-        header('location: '.URL);
+        header('Location: '.$_SERVER['HTTP_REFERER']);
     }
 }
 else{
-    header('location: '.URL);
+    header('Location: '.$_SERVER['HTTP_REFERER']);
 }
 ?>
 

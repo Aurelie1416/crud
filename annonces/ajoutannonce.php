@@ -1,35 +1,16 @@
 <?php
 use PHPMailer\PHPMailer\Exception;
 require_once '../include/hello.php';
-require_once '../include/function.php';
 
 if(!isset($_SESSION['user'])){
     $_SESSION['message'][] = "Vous devez vous connecter pour ajouter une annonce";
-    header('Location: '.URL.'/users/connexion.php');
+    header('Location: '.$_SERVER['HTTP_REFERER']);
     exit;
 }
 
 require_once '../include/connect.php';
-
-// transforme une chaîne de caractère json en tableau php
-$role = json_decode($_SESSION['user']['roles']);
-
-// on vérifie si on a le role admin dans $role
-if(!in_array('ROLE_ADMIN', $role)){
-    header('Location: '.URL);
-    exit;
-}
-
-$sql = "SELECT * FROM `categories` ORDER BY `name` ASC";
-$sql2 = 'SELECT * FROM `departements` ORDER BY `number`;';
-
-// on exécute la requête
-$query = $db->query($sql);
-$query2 = $db->query($sql2);
-
-$liste_categorie = $query->fetchAll(PDO::FETCH_ASSOC);
-$liste_dep = $query2->fetchAll(PDO::FETCH_ASSOC);
-
+require_once '../include/function.php';
+// on traite le formulaire
 if(!empty($_POST)){
     $_SESSION['form'] = $_POST;
     // POST n'est pas vide on vérifie tous les champs
@@ -38,17 +19,19 @@ if(!empty($_POST)){
     && isset($_POST['contenu']) && !empty($_POST['contenu'])
     && isset($_POST['categories']) && !empty($_POST['categories'])
     && isset($_POST['price']) && !empty($_POST['price'])
-    && isset($_POST['dep']) && !empty($_POST['dep'])
+    && isset($_POST['dep']) && !empty($_POST['dep']
+    && isset($_FILES['image']) && !empty($_FILES['image']) 
+    && $_FILES['image']['error'] != UPLOAD_ERR_NO_FILE)
     ){ 
-        $titre = htmlspecialchars($_POST['titre']);
+        $titre = strip_tags($_POST['titre']);
         $contenu = htmlspecialchars($_POST['contenu']);
-        $categorie = htmlspecialchars($_POST["categories"]); 
-        $prix = htmlspecialchars($_POST["price"]); 
-        $dep = htmlspecialchars($_POST["dep"]); 
+        $categorie = strip_tags($_POST["categories"]); 
+        if(!is_numeric($_POST["price"])){
+            $_SESSION['message'][] = "Le prix est incorrect";
+        }
+        $prix = $_POST["price"];
+        $dep = $_POST["dep"]; 
         $user = $_SESSION['user']['id'];
-        $nomImage;
-
-        if(isset($_FILES['image']) && !empty($_FILES['image']) && $_FILES['image']['error'] != UPLOAD_ERR_NO_FILE){ // si formulaire soumis
                 
             // on vérifie qu'on a pas d'erreur
             if($_FILES['image']['error'] != UPLOAD_ERR_OK){
@@ -82,15 +65,15 @@ if(!empty($_POST)){
             // on transfère le fichier
             if(!move_uploaded_file($_FILES['image']['tmp_name'], __DIR__.'/../uploads/'.$nomImage)){
                 $_SESSION['message'][] = "L'image n'a pas été transférée";
+                header('Location: ajoutarticle.php');
+                exit;
             }
+
+            
 
             mini(__DIR__.'/../uploads/'.$nomImage, 200);
             mini(__DIR__.'/../uploads/'.$nomImage, 300);
-        }
-        else{
-            $nomImage = null;
-        }
-    
+
         // On écrit la requette
         $sql = "INSERT INTO `annonces`(`title`, `content`, `categories_id`, `users_id`, `image`, `price`, `departements_number`) VALUES (:title, :content, :categorie, :user, :image, :prix, :dep);"; 
         // on prépare la requette
@@ -142,6 +125,16 @@ if(!empty($_POST)){
     }  
 }
 
+$sql = "SELECT * FROM `categories` ORDER BY `name` ASC";
+$sql2 = 'SELECT * FROM `departements` ORDER BY `number`;';
+
+// on exécute la requête
+$query = $db->query($sql);
+$query2 = $db->query($sql2);
+
+$liste_categorie = $query->fetchAll(PDO::FETCH_ASSOC);
+$liste_dep = $query2->fetchAll(PDO::FETCH_ASSOC);
+
 $sql ='SELECT 
     a.*, 
     c.`name` AS categories_name, 
@@ -176,11 +169,11 @@ $liste_annonce = $query->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <h3><a href="annonce.php?id=<?= $annonce['id'] ?>"><?= $annonce['title'] ?></a></h3>
     <?php
-    if(!is_null($annonce['image'])){ // $article['image'] != NULL
+    if(!is_null($annonce['image'])){ 
         $nomfichier = pathinfo($annonce['image'], PATHINFO_FILENAME);
         $extension = pathinfo($annonce['image'], PATHINFO_EXTENSION);
-        $miniature = $nomfichier.'-200x200.'.$extension;
-        ?>
+        $miniature = $nomfichier.'-200x200.'.$extension
+    ?>
         <img src="<?= URL.'/uploads/'.$miniature ?>" alt="<?= $annonce['title'] ?>">
     <?php
     }
@@ -188,6 +181,7 @@ $liste_annonce = $query->fetchAll(PDO::FETCH_ASSOC);
     <p><?= $annonce['price'] ?></p>
     <a href="annonce_departement.php?id=<?= $annonce['departements_number']?>"><?= $annonce['departements_name'] ?></a>
     <p>Annonce écrit par <?= $annonce['pseudo'] ?> dans la catégorie <?= $annonce['categories_name'] ?> le <?= formatDate($annonce['created_at']) ?></p>
+    <a href="modifier.php?id=<?= $annonce['id'] ?>">Modifier</a>
     <?php
         endforeach;
     ?>
@@ -216,7 +210,7 @@ $liste_annonce = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>        
         <div>
             <label for="price">Prix</label>
-            <input id="price" name="price"><?= isset($_SESSION['form']['price']) ? $_SESSION['form']['price']: ""?></input>
+            <input type="number" min="0" step="0.01" id="price" name="price"><?= isset($_SESSION['form']['price']) ? $_SESSION['form']['price']: ""?></input>
         </div>
         <div>
             <label for="image">Image</label>

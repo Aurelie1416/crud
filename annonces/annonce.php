@@ -31,7 +31,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     // on recupère les données
     $annonce = $query->fetch(PDO::FETCH_ASSOC);
 
-    // on vérifie si l'article n'existe pas
     if(!$annonce){
         header('location: '.URL);
     }

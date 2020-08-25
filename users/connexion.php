@@ -32,6 +32,8 @@ if(!empty($_POST)){
                 'email' => $user['email'],
                 'roles' => $user['roles']
             ];
+            header('Location: '.URL);
+            exit;
         }
         else{
             $_SESSION['message'][] = "Votre mot de passe est invalide";

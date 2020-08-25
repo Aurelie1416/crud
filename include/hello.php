@@ -35,6 +35,7 @@ if (isset($_SESSION['user'])){
     echo "Bonjour ".$_SESSION['user']['pseudo']."<a href='".URL."/users/deconnexion.php'>Déconnexion</a>";
 }
 else{
-    echo '<a href="'.URL.'/users/connexion.php">Connexion</a> - <a href="'.URL.'/users/inscription.php">Inscription</a>';
+    echo '<a href="'.URL.'/users/connexion.php">Connexion</a> - <a href="'.URL.'/inscription.php">Inscription</a>';
 }
 ?>
+<a href="<?= URL ?>/annonces/ajoutannonce.php">Ajouter une annonce</a>

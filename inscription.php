@@ -44,7 +44,7 @@ if(!empty($_POST)){
         }
 
         // le formulaire est complet et les données nettoyées, on peut inscrire l'utilisateur
-        require_once '../include/connect.php';
+        require_once 'include/connect.php';
 
         // On écrit la requette
         $sql = "INSERT INTO `users`(`email`, `password`, `pseudo`, `tel`) VALUES (:email, :motdepasse, :nom, :phone);"; 
@@ -64,7 +64,7 @@ if(!empty($_POST)){
 
         $_SESSION['message'][] = "vous vous êtes escrit. Vous êtes l'utilisateur numéro $num";
 
-        require_once '../include/config-mail.php';
+        require_once 'include/config-mail.php';
         try{
             // on définit l'expéditeur du mail
             $sendmail->setFrom('annonce@domaine.fr', 'Blog');
