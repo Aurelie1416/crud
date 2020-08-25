@@ -40,6 +40,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     
     // on vérifie que POST contient des données
     if(!empty($_POST)){
+       
         // on vérifie que tous les champs obligatoires sont remplis
         if(
             isset($_POST['titre']) && !empty($_POST['titre'] 
@@ -48,19 +49,17 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             && $_POST['categories']) && !empty($_POST['categories']
             && $_POST['dep']) && !empty($_POST['dep']) 
         ){
-            $titre = strip_tags($_POST['titre']);
+       
+        $titre = strip_tags($_POST['titre']);
             $contenu = htmlspecialchars($_POST['contenu']);
             $categorie = strip_tags($_POST["categories"]); 
-            if(!is_numeric($_POST["price"])){
+            if(!is_numeric($_POST["prix"])){
                 $_SESSION['message'][] = "Le prix est incorrect";
-                header('Location: modifier.php');
-                exit;
             }
-            $prix = $_POST["price"];
+            $prix = $_POST["prix"];
             $dep = $_POST["dep"];
             $nomImage = $annonce['image'];
             if(isset($_FILES['image']) && !empty($_FILES['image']) && $_FILES['image']['error'] != UPLOAD_ERR_NO_FILE){ // si formulaire soumis
-            
                 // on vérifie qu'on a pas d'erreur
                 if($_FILES['image']['error'] != UPLOAD_ERR_OK){
                     // on ajoute un message de session
@@ -84,9 +83,9 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                 if($_FILES['image']['size'] > $taillemax){
                     $_SESSION['message'][] = "Votre image est trop lourde (1Mo maximum)";
                 }
-            
+
                 if(isset($_SESSION['message']) && !empty($_SESSION['message'])){
-                    header('Location: ajoutarticle.php');
+                    header('Location: ajoutannonce.php');
                     exit;
                 }
                 
@@ -94,12 +93,15 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                 if(!move_uploaded_file($_FILES['image']['tmp_name'], __DIR__.'/../uploads/'.$nomImage)){
                     $_SESSION['message'][] = "L'image n'a pas été transférée";
                 }
-            
+                
+                
                 $ancienne = $annonce['image'];
                 unlink(__DIR__.'/../uploads/'.$ancienne);
                 $nomfichier = pathinfo($annonce['image'], PATHINFO_FILENAME);
                 $extension = pathinfo($annonce['image'], PATHINFO_EXTENSION);
                 $miniature = $nomfichier.'-200x200.'.$extension;
+                require_once '../include/function.php';
+
                 mini(__DIR__.'/../uploads/'.$nomImage, 200);
                 mini(__DIR__.'/../uploads/'.$nomImage, 300);
             }
@@ -122,7 +124,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             // on exécute
             $query->execute();
 
-            header('Location: '.URL.'/annonces/ajoutannonce.php.php');
+            header('Location: '.URL.'/annonces/ajoutannonce.php');
         }
     }
     else{
