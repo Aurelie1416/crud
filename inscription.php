@@ -61,6 +61,13 @@ if(!empty($_POST)){
         $query->execute();
 
         $num = $db->lastInsertId();
+        $_SESSION['user'] = [
+            'id' => $num,
+            'pseudo' => $nom,
+            'email' => $email,
+            'tel' => $tel,
+            'roles' => ["ROLES_USER"]
+        ];
 
         $_SESSION['message'][] = "vous vous êtes escrit. Vous êtes l'utilisateur numéro $num";
 
